@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { 
   Heart, 
   ShoppingBag, 
@@ -65,6 +67,13 @@ const ProductDetails = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [reviews, setReviews] = useState(mockProducts["1"]?.reviews || []);
+  const [newReview, setNewReview] = useState({
+    rating: 0,
+    comment: "",
+    name: ""
+  });
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const product = mockProducts[id as keyof typeof mockProducts];
 
@@ -90,6 +99,26 @@ const ProductDetails = () => {
 
   const handleQuantityChange = (change: number) => {
     setQuantity(Math.max(1, quantity + change));
+  };
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newReview.rating > 0 && newReview.comment.trim() && newReview.name.trim()) {
+      const review = {
+        id: reviews.length + 1,
+        name: newReview.name,
+        rating: newReview.rating,
+        comment: newReview.comment,
+        date: new Date().toISOString().split('T')[0]
+      };
+      setReviews([review, ...reviews]);
+      setNewReview({ rating: 0, comment: "", name: "" });
+      setShowReviewForm(false);
+    }
+  };
+
+  const handleStarClick = (rating: number) => {
+    setNewReview({ ...newReview, rating });
   };
 
   return (
@@ -285,9 +314,91 @@ const ProductDetails = () => {
 
         {/* Reviews Section */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-foreground mb-8">Customer Reviews</h2>
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-foreground">Customer Reviews</h2>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowReviewForm(!showReviewForm)}
+            >
+              Write a Review
+            </Button>
+          </div>
+
+          {/* Review Form */}
+          {showReviewForm && (
+            <div className="bg-card rounded-2xl p-6 border border-border/50 mb-8">
+              <h3 className="text-lg font-semibold text-foreground mb-6">Write Your Review</h3>
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Your Name
+                  </label>
+                  <Input
+                    type="text"
+                    value={newReview.name}
+                    onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
+                    placeholder="Enter your name"
+                    className="rounded-full"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Rating
+                  </label>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => handleStarClick(star)}
+                        className="p-1 hover:scale-110 transition-transform"
+                      >
+                        <Star
+                          className={`h-6 w-6 ${
+                            star <= newReview.rating
+                              ? "text-gold fill-current"
+                              : "text-muted-foreground/30 hover:text-gold/50"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Your Review
+                  </label>
+                  <Textarea
+                    value={newReview.comment}
+                    onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                    placeholder="Share your thoughts about this product..."
+                    rows={4}
+                    className="rounded-2xl resize-none"
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <Button type="submit" variant="luxury">
+                    Submit Review
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setShowReviewForm(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
+
           <div className="space-y-6">
-            {product.reviews.map((review) => (
+            {reviews.map((review) => (
               <div key={review.id} className="bg-card rounded-2xl p-6 border border-border/50">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -322,6 +433,12 @@ const ProductDetails = () => {
                 </p>
               </div>
             ))}
+            
+            {reviews.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>No reviews yet. Be the first to review this product!</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
