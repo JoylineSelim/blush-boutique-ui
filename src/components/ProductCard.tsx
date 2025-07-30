@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Heart, ShoppingBag, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,11 +43,13 @@ const ProductCard = ({
     >
       {/* Image Container */}
       <div className="relative overflow-hidden rounded-t-3xl bg-gradient-pearl">
-        <img
-          src={image}
-          alt={name}
-          className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110"
-        />
+        <Link to={`/product/${id}`}>
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+        </Link>
         
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -100,9 +103,11 @@ const ProductCard = ({
         </p>
 
         {/* Product Name */}
-        <h3 className="font-semibold text-lg text-card-foreground mb-2 line-clamp-2">
-          {name}
-        </h3>
+        <Link to={`/product/${id}`}>
+          <h3 className="font-semibold text-lg text-card-foreground mb-2 line-clamp-2 hover:text-primary transition-colors">
+            {name}
+          </h3>
+        </Link>
 
         {/* Rating */}
         <div className="flex items-center gap-2 mb-3">
